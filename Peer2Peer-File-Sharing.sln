@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Peer2Peer-File-Sharing", "Peer2Peer-File-Sharing.csproj", "{63B46710-B9C1-4FC1-A4DD-23280D0033D3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{63B46710-B9C1-4FC1-A4DD-23280D0033D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63B46710-B9C1-4FC1-A4DD-23280D0033D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63B46710-B9C1-4FC1-A4DD-23280D0033D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63B46710-B9C1-4FC1-A4DD-23280D0033D3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A700BC89-B68C-4866-9A99-0E68B78A9D45}
+	EndGlobalSection
+EndGlobal

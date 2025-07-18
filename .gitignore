@@ -1,0 +1,46 @@
+# Build and debug folders
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE specific
+.vscode/
+.idea/
+
+# Rider project files
+*.sln.iml
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# ASP.NET Core secrets
+**/secrets.json
+
+# Logs
+*.log
+
+# Publish artifacts
+*.publish/
+
+# HTTP files generated responses (if using REST Client extension in VS Code)
+*.http.response.*
+
+# User secrets folder (outside project, but safe to exclude if ever accidentally added)
+.env
+*.env
+
+# dotCover, Coverlet, etc.
+coverage/
+TestResults/
+
+# Temporary files
+*.tmp
+*.bak
+
+appsettings.Development.json
