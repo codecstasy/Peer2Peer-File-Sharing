@@ -14,7 +14,8 @@ public class FileController : ControllerBase
     {
         _fileChunker = fileChunker;
     }
-
+    
+    // Works fine
     [HttpPost("upload")]
     public async Task<ActionResult<ChunkResult>> UploadFile(IFormFile file)
     {
@@ -51,7 +52,7 @@ public class FileController : ControllerBase
             return StatusCode(500, $"Error processing file: {ex.Message}");
         }
     }
-    
+
     // Works fine
     [HttpGet("test")]
     public async Task<ActionResult<ChunkResult>> TestChunker()
@@ -86,15 +87,15 @@ public class FileController : ControllerBase
         }
     }
 
-    [HttpGet("info/{fileName}")]
-    public ActionResult GetFileInfo(string fileName)
-    {
-        // This would be used to get info about available files in P2P network
-        return Ok(new
-        {
-            Message = "File info endpoint",
-            FileName = fileName,
-            Note = "This endpoint will provide file metadata for P2P sharing"
-        });
-    }
+    // [HttpGet("info/{fileName}")]
+    // public ActionResult GetFileInfo(string fileName)
+    // {
+    //     // This would be used to get info about available files in P2P network
+    //     return Ok(new
+    //     {
+    //         Message = "File info endpoint",
+    //         FileName = fileName,
+    //         Note = "This endpoint will provide file metadata for P2P sharing"
+    //     });
+    // }
 }

@@ -12,5 +12,5 @@ public class ChunkResult
     // Additional useful info for P2P
     public int TotalChunks => ChunkFiles.Count;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public string OriginalFilePath { get; set; } = string.Empty;
+    // public string OriginalFilePath { get; set; } = string.Empty;
 }
