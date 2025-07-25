@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddScoped<IFileChunker, FileChunker>();
+builder.Services.AddScoped<IFileAssembler, FileAssembler>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

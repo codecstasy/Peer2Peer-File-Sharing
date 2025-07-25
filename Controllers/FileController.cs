@@ -9,10 +9,12 @@ namespace Peer2Peer_File_Sharing.Controllers;
 public class FileController : ControllerBase
 {
     private readonly IFileChunker _fileChunker;
+    private readonly IFileAssembler _fileAssembler;
 
-    public FileController(IFileChunker fileChunker)
+    public FileController(IFileChunker fileChunker, IFileAssembler fileAssembler)
     {
         _fileChunker = fileChunker;
+        _fileAssembler = fileAssembler;
     }
     
     // Works fine
@@ -53,37 +55,35 @@ public class FileController : ControllerBase
         }
     }
 
-    // Works fine
-    [HttpGet("test")]
-    public async Task<ActionResult<ChunkResult>> TestChunker()
+    // Test the assembler with existing chunks
+    [HttpPost("assemble")]
+    public async Task<IActionResult> Assembler([FromBody] AssembleRequest request)
     {
         try
         {
-            // Create a test file
-            var testContent = "This is a test file for P2P file sharing. " +
-                             "It contains some sample data to verify the chunking functionality works correctly.";
+            var success = await _fileAssembler.AssembleFileAsync(
+                request.MetadataFilePath, 
+                request.OutputFilePath
+            );
             
-            var tempPath = Path.GetTempFileName();
-            var chunkOutputPath = Path.Combine(Path.GetTempPath(), "p2p_test_chunks", Guid.NewGuid().ToString());
-
-            await System.IO.File.WriteAllTextAsync(tempPath, testContent);
-
-            // Test the chunker
-            var result = await _fileChunker.CreateChunksAsync(tempPath, chunkOutputPath);
-
-            // Clean up temp file
-            System.IO.File.Delete(tempPath);
-
-            return Ok(new
+            if (success)
             {
-                Message = "FileChunker test completed successfully",
-                TestFileSize = testContent.Length,
-                Result = result
-            });
+                var fileInfo = new FileInfo(request.OutputFilePath);
+                return Ok(new 
+                { 
+                    Message = "File assembled successfully!", 
+                    OutputPath = request.OutputFilePath,
+                    FileSize = fileInfo.Length
+                });
+            }
+            else
+            {
+                return BadRequest("Failed to assemble file - check console for details");
+            }
         }
         catch (Exception ex)
         {
-            return StatusCode(500, $"Test failed: {ex.Message}");
+            return StatusCode(500, $"Assembly error: {ex.Message}");
         }
     }
 
