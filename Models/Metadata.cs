@@ -7,4 +7,5 @@ public class Metadata
     public long TotalSize { get; set; }
     public int ChunkSize { get; set; }
     public List<string> ChunkHashes { get; set; } = new();
+    public int ChunkCount => ChunkHashes.Count;
 }

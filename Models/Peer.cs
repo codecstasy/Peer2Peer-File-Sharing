@@ -15,7 +15,7 @@ public class Peer
     public int MaxKnownPeers { get; set; } = 50; // Limit to control growth
     public string EndPoint => $"{IpAddress}:{Port}";
     
-    // Convert to PeerInfo for lightweight sharing
+    // Convert self to PeerInfo for lightweight sharing
     public PeerInfo ToPeerInfo()
     {
         PeerInfo peerInfo = new PeerInfo();
