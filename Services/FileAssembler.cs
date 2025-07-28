@@ -5,6 +5,12 @@ using System.Text.Json;
 
 public class FileAssembler : IFileAssembler
 {
+    private readonly ILogger<FileAssembler> _logger;
+
+    public FileAssembler(ILogger<FileAssembler> logger)
+    {
+        _logger = logger;
+    }
     public async Task<bool> AssembleFileAsync(string metadataFilePath, string outputFilePath)
     {
         try
@@ -12,7 +18,7 @@ public class FileAssembler : IFileAssembler
             // Step 1: Load metadata
             if (!File.Exists(metadataFilePath))
             {
-                Console.WriteLine($"Metadata file not found: {metadataFilePath}");
+                _logger.LogError("Metadata file not found: {MetadataFilePath}", metadataFilePath);
                 return false;
             }
 
@@ -21,7 +27,7 @@ public class FileAssembler : IFileAssembler
             
             if (metadata == null)
             {
-                Console.WriteLine("Failed to parse metadata file");
+                _logger.LogError("Failed to parse metadata file");
                 return false;
             }
 
@@ -29,7 +35,7 @@ public class FileAssembler : IFileAssembler
             var chunkDirectory = Path.GetDirectoryName(metadataFilePath);
             
             // Step 3: Verify all chunks exist and are valid
-            Console.WriteLine($"Verifying {metadata.ChunkCount} chunks...");
+            _logger.LogInformation("Verifying {ChunkCount} chunks...", metadata.ChunkCount);
             
             for (int i = 0; i < metadata.ChunkCount; i++)
             {
@@ -38,7 +44,7 @@ public class FileAssembler : IFileAssembler
                 // Check if chunk file exists
                 if (!File.Exists(chunkFileName))
                 {
-                    Console.WriteLine($"Missing chunk: {chunkFileName}");
+                    _logger.LogError("Missing chunk: {ChunkFileName}", chunkFileName);
                     return false;
                 }
                 
@@ -49,15 +55,15 @@ public class FileAssembler : IFileAssembler
                 
                 if (actualHash != expectedHash)
                 {
-                    Console.WriteLine($"Chunk {i} is corrupted! Expected: {expectedHash}, Got: {actualHash}");
+                    _logger.LogError("Chunk {ChunkIndex} is corrupted! Expected: {ExpectedHash}, Got: {ActualHash}", i, expectedHash, actualHash);
                     return false;
                 }
                 
-                Console.WriteLine($"Chunk {i} verified ✓");
+                _logger.LogDebug("Chunk {ChunkIndex} verified ✓", i);
             }
             
             // Step 4: Assemble the file
-            Console.WriteLine($"Assembling file: {outputFilePath}");
+            _logger.LogInformation("Assembling file: {OutputFilePath}", outputFilePath);
             
             var outputStream = new FileStream(outputFilePath, FileMode.Create);
             
@@ -67,7 +73,7 @@ public class FileAssembler : IFileAssembler
                 var chunkData = await File.ReadAllBytesAsync(chunkFileName);
                 
                 await outputStream.WriteAsync(chunkData);
-                Console.WriteLine($"Added chunk {i} to file");
+                _logger.LogDebug("Added chunk {ChunkIndex} to file", i);
             }
             
             outputStream.Close();
@@ -76,18 +82,18 @@ public class FileAssembler : IFileAssembler
             var finalFileInfo = new FileInfo(outputFilePath);
             if (finalFileInfo.Length == metadata.TotalSize)
             {
-                Console.WriteLine($"✅ File assembled successfully! Size: {finalFileInfo.Length} bytes");
+                _logger.LogInformation("✅ File assembled successfully! Size: {FileSize} bytes", finalFileInfo.Length);
                 return true;
             }
             else
             {
-                Console.WriteLine($"❌ File size mismatch! Expected: {metadata.TotalSize}, Got: {finalFileInfo.Length}");
+                _logger.LogError("❌ File size mismatch! Expected: {ExpectedSize}, Got: {ActualSize}", metadata.TotalSize, finalFileInfo.Length);
                 return false;
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error assembling file: {ex.Message}");
+            _logger.LogError(ex, "Error assembling file: {ErrorMessage}", ex.Message);
             return false;
         }
     }

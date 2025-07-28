@@ -10,25 +10,36 @@ public class FileController : ControllerBase
 {
     private readonly IFileChunker _fileChunker;
     private readonly IFileAssembler _fileAssembler;
+    private readonly ILogger<FileController> _logger;
 
-    public FileController(IFileChunker fileChunker, IFileAssembler fileAssembler)
+    public FileController(IFileChunker fileChunker, IFileAssembler fileAssembler, ILogger<FileController> logger)
     {
         _fileChunker = fileChunker;
         _fileAssembler = fileAssembler;
+        _logger = logger;
     }
     
     // Works fine
     [HttpPost("upload")]
     public async Task<ActionResult<ChunkResult>> UploadFile(IFormFile file)
     {
+        _logger.LogInformation("Upload request received for file: {FileName}, Size: {FileSize} bytes", 
+            file?.FileName ?? "unknown", file?.Length ?? 0);
+            
         if (file == null || file.Length == 0)
+        {
+            _logger.LogWarning("Upload request rejected: No file uploaded or file is empty");
             return BadRequest("No file uploaded");
+        }
 
         try
         {
             // Save uploaded file temporarily
             var tempPath = Path.GetTempFileName();
             var chunkOutputPath = Path.Combine(Path.GetTempPath(), "p2p_chunks", Guid.NewGuid().ToString());
+            
+            _logger.LogDebug("Saving uploaded file temporarily to: {TempPath}", tempPath);
+            _logger.LogDebug("Chunk output directory: {ChunkOutputPath}", chunkOutputPath);
 
             using (var stream = new FileStream(tempPath, FileMode.Create))
             {
@@ -39,8 +50,11 @@ public class FileController : ControllerBase
             var result = await _fileChunker.CreateChunksAsync(tempPath, chunkOutputPath);
 
             // Clean up temp file
+            _logger.LogDebug("Cleaning up temporary file: {TempPath}", tempPath);
             System.IO.File.Delete(tempPath);
 
+            _logger.LogInformation("✅ File upload and chunking completed successfully for {FileName}", file.FileName);
+            
             return Ok(new
             {
                 Message = "File chunked successfully",
@@ -51,6 +65,8 @@ public class FileController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error processing uploaded file {FileName}: {ErrorMessage}", 
+                file?.FileName ?? "unknown", ex.Message);
             return StatusCode(500, $"Error processing file: {ex.Message}");
         }
     }
@@ -59,6 +75,15 @@ public class FileController : ControllerBase
     [HttpPost("assemble")]
     public async Task<IActionResult> Assembler([FromBody] AssembleRequest request)
     {
+        _logger.LogInformation("Assembly request received - Metadata: {MetadataPath}, Output: {OutputPath}", 
+            request?.MetadataFilePath ?? "unknown", request?.OutputFilePath ?? "unknown");
+            
+        if (request == null || string.IsNullOrEmpty(request.MetadataFilePath) || string.IsNullOrEmpty(request.OutputFilePath))
+        {
+            _logger.LogWarning("Assembly request rejected: Invalid request parameters");
+            return BadRequest("Invalid request parameters");
+        }
+            
         try
         {
             var success = await _fileAssembler.AssembleFileAsync(
@@ -69,6 +94,9 @@ public class FileController : ControllerBase
             if (success)
             {
                 var fileInfo = new FileInfo(request.OutputFilePath);
+                _logger.LogInformation("✅ File assembly completed successfully - Output: {OutputPath}, Size: {FileSize} bytes", 
+                    request.OutputFilePath, fileInfo.Length);
+                    
                 return Ok(new 
                 { 
                     Message = "File assembled successfully!", 
@@ -78,11 +106,14 @@ public class FileController : ControllerBase
             }
             else
             {
-                return BadRequest("Failed to assemble file - check console for details");
+                _logger.LogError("File assembly failed for metadata: {MetadataPath}", request.MetadataFilePath);
+                return BadRequest("Failed to assemble file - check logs for details");
             }
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Assembly error for metadata {MetadataPath}: {ErrorMessage}", 
+                request?.MetadataFilePath ?? "unknown", ex.Message);
             return StatusCode(500, $"Assembly error: {ex.Message}");
         }
     }
